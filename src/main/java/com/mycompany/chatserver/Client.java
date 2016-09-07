@@ -19,7 +19,18 @@ public class Client extends Thread {
     public void run() {
         System.out.println("New client connection");
         chatroom(s);
+        removeClient();
         System.out.println("Client disconnected");
+    }
+
+    public boolean authentication(String user) {
+        //If the user is not in the list, return true, otherwise false
+        for (Username username : userList) {
+            if (username.getUsername().equals(user)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void chatroom(Socket s) {
@@ -28,20 +39,28 @@ public class Client extends Thread {
             PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
             String msg = "";
             prnt.println("Please login first with this format: LOGIN:<name>");
-            showClients();
+
             //Login Phase
             boolean login = false;
             while (!login) {
                 msg = scn.nextLine();
+
+                //Show list of clients
+                if (msg.equals("CLIENTLIST:")) {
+                    prnt.println(showClients());
+                }
+
+                //Wether or not the user already exists
                 if (msg.contains("LOGIN:")) {
                     String[] parts = msg.split(":");
-                    user = new Username(parts[1]);
-                    if (userList.contains(user)) {
-                        break;
-                    } else {
-                        userList.add(user);
-                        prnt.println(showClients());
+                    //authentication(String) is a method in the Client class
+                    if (authentication(parts[1])) {
+                        userList.add(user = new Username(parts[1]));
                         login = true;
+                        prnt.println("Login Successful");
+                    } else {
+                        prnt.println("User already exists. Please reconnect.");
+                        break;
                     }
                 }
             }
@@ -49,7 +68,8 @@ public class Client extends Thread {
             //Chatting phase
             if (login) {
                 prnt.println("Welcome to the chatroom");
-                while (!msg.contains("LOGOUT")) {
+                prnt.println(showClients());
+                while (!msg.contains("LOGOUT:")) {
                     msg = scn.nextLine();
 
                     //If the user tries to login again.
@@ -102,11 +122,7 @@ public class Client extends Thread {
 
                 }
             }
-
-            //REMOVE CLIENT FROM CLIENTLIST
-            userList.remove(user);
-            System.out.println("Removed " + user.getUsername() + " from the list of clients");
-
+            prnt.println("Connection closed");
             //Close Connection
             scn.close();
             prnt.close();
@@ -123,5 +139,16 @@ public class Client extends Thread {
             users += username.getUsername() + ",";
         }
         return users;
+    }
+
+    public void removeClient() {
+        for (Username u : userList) {
+            if (u.getUsername().equals(user.getUsername())) {
+                userList.remove(u);
+                System.out.println("Removed " + user.getUsername() + " from the list of clients");
+                break;
+            }
+        }
+
     }
 }
