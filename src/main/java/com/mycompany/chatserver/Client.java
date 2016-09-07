@@ -28,6 +28,7 @@ public class Client extends Thread {
             PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
             String msg = "";
             prnt.println("Please login first with this format: LOGIN:<name>");
+            showClients();
             //Login Phase
             boolean login = false;
             while (!login) {
@@ -35,13 +36,12 @@ public class Client extends Thread {
                 if (msg.contains("LOGIN:")) {
                     String[] parts = msg.split(":");
                     user = new Username(parts[1]);
-                    if (!userList.contains(user)) {
+                    if (userList.contains(user)) {
+                        break;
+                    } else {
                         userList.add(user);
                         prnt.println(showClients());
                         login = true;
-                    } else {
-                        prnt.println("User already exists");
-                        login = false;
                     }
                 }
             }
