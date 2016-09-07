@@ -9,6 +9,7 @@ import java.util.Scanner;
 public class Client extends Thread {
 
     Socket s;
+    Username user;
     ArrayList<Username> userList = Server.getInstance().getList();
 
     public Client(Socket s) {
@@ -29,21 +30,29 @@ public class Client extends Thread {
             prnt.println("Welcome to the chatroom");
 
             //Login Phase
+            startChat:
             while (1 == 1) {
-                if (msg.contains("Login:")) {
+                msg = scn.nextLine();
+                if (msg.contains("LOGIN:")) {
                     //{ "LOGIN" , "Casper" }
                     String[] parts = msg.split(":");
-                    Username user = new Username(parts[1]);
+                    user = new Username(parts[1]);
                     userList.add(user);
                     System.out.println("Added user: " + parts[1]);
                     prnt.println(showClients());
-                    break;
+                    break startChat;
                 }
             }
 
+            //Chatting phase
             while (!msg.contains("LOGOUT")) {
                 msg = scn.nextLine();
 
+                //If the user tries to login again.
+                if (msg.contains("LOGIN:")) {
+                    prnt.println("You're already logged in as " + user.getUsername());
+                }
+                
                 //To ensure that msg does not only contain these keywords.
                 if (msg.equals("MSG:") || msg.equals("LOGIN:")) {
                     prnt.println("Please specify your command");
@@ -89,6 +98,9 @@ public class Client extends Thread {
 
             }
             //REMOVE CLIENT FROM CLIENTLIST
+            userList.remove(user);
+
+            //Close Connection
             scn.close();
             prnt.close();
             s.close();
