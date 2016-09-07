@@ -28,16 +28,8 @@ public class Client extends Thread {
             String msg = "";
             prnt.println("Welcome to the chatroom");
 
-            while (!msg.contains("LOGOUT")) {
-                msg = scn.nextLine();
-
-                //To ensure that msg does not only contain these keywords.
-                if (msg.equals("MSG:") || msg.equals("LOGIN:")) {
-                    prnt.println("Please specify your command");
-                    continue;
-                }
-
-                //Login Phase
+            //Login Phase
+            while (1 == 1) {
                 if (msg.contains("Login:")) {
                     //{ "LOGIN" , "Casper" }
                     String[] parts = msg.split(":");
@@ -45,6 +37,17 @@ public class Client extends Thread {
                     userList.add(user);
                     System.out.println("Added user: " + parts[1]);
                     prnt.println(showClients());
+                    break;
+                }
+            }
+
+            while (!msg.contains("LOGOUT")) {
+                msg = scn.nextLine();
+
+                //To ensure that msg does not only contain these keywords.
+                if (msg.equals("MSG:") || msg.equals("LOGIN:")) {
+                    prnt.println("Please specify your command");
+                    continue;
                 }
 
                 //Message Part
@@ -94,8 +97,9 @@ public class Client extends Thread {
         }
     }
 
+    //Show list of clients
     public String showClients() {
-        String users = "";
+        String users = "CLIENTLIST:";
         for (Username user : userList) {
             users += user.getUsername() + ",";
         }
