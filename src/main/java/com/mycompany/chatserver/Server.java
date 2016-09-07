@@ -26,7 +26,7 @@ public class Server {
     }
     
     //ARRAYLIST
-    private ArrayList<Username> userList = new ArrayList();
+    private static ArrayList<Username> userList;
 
     public ArrayList<Username> getList() {
         return userList;
@@ -41,6 +41,8 @@ public class Server {
             ip = args[0];
             portNum = Integer.parseInt(args[1]);
         }
+        
+        userList = new ArrayList();
 
         ServerSocket ss = new ServerSocket();
         ss.bind(new InetSocketAddress(ip, portNum));
