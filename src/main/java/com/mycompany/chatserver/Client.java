@@ -10,27 +10,19 @@ public class Client extends Thread {
 
     Socket s;
     Username user;
+    //Takes the arraylist created in the Server class.
     ArrayList<Username> userList = Server.getInstance().getList();
 
     public Client(Socket s) {
         this.s = s;
     }
 
+    //Thread starter
     public void run() {
         System.out.println("New client connection");
         chatroom(s);
         removeClient();
         System.out.println("Client disconnected");
-    }
-
-    public boolean authentication(String user) {
-        //If the user is not in the list, return true, otherwise false
-        for (Username username : userList) {
-            if (username.getUsername().equals(user)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public void chatroom(Socket s) {
@@ -53,7 +45,7 @@ public class Client extends Thread {
                 //Wether or not the user already exists
                 if (msg.contains("LOGIN:")) {
                     String[] parts = msg.split(":");
-                    //authentication(String) is a method in the Client class
+                    //authentication() is a method in the Client class (See line 146)
                     if (authentication(parts[1])) {
                         userList.add(user = new Username(parts[1]));
                         login = true;
@@ -65,10 +57,11 @@ public class Client extends Thread {
                 }
             }
 
-            //Chatting phase
+            //Check if login is successful or not
             if (login) {
                 prnt.println("Welcome to the chatroom");
                 prnt.println(showClients());
+                //Chatting phase
                 while (!msg.contains("LOGOUT:")) {
                     msg = scn.nextLine();
 
@@ -80,16 +73,11 @@ public class Client extends Thread {
                     //To ensure that msg does not only contain these keywords.
                     if (msg.equals("MSG:") || msg.equals("LOGIN:")) {
                         prnt.println("Please specify your command");
-                        continue;
                     }
 
                     //Message Part
                     if (msg.contains("MSG:")) {
-                        //MSG:Casper,Philip,Hamza:Hej
-                        //parts array: { "MSG" , "Casper,Philip,Hamza" , "Hej"}
                         String[] parts = msg.split(":");
-
-                        //clients array: { "Casper" , "Hamza" , "Philip"}
                         String[] clients = parts[1].split(",");
 
                         //Check if client exists in our list of clients
@@ -107,7 +95,7 @@ public class Client extends Thread {
 
                     }
 
-                    //Message ALL part
+                    //Message ALL
                     if (msg.contains("MSG::")) {
                         String[] parts = msg.split(":");
                         for (Username user : userList) {
@@ -123,6 +111,7 @@ public class Client extends Thread {
                 }
             }
             prnt.println("Connection closed");
+
             //Close Connection
             scn.close();
             prnt.close();
@@ -131,8 +120,8 @@ public class Client extends Thread {
             System.out.println(e.getMessage());
         }
     }
-    //Show list of clients
 
+    //Show list of clients
     public String showClients() {
         String users = "CLIENTLIST:";
         for (Username username : userList) {
@@ -141,6 +130,7 @@ public class Client extends Thread {
         return users;
     }
 
+    //Remove client from our list
     public void removeClient() {
         for (Username u : userList) {
             if (u.getUsername().equals(user.getUsername())) {
@@ -150,5 +140,16 @@ public class Client extends Thread {
             }
         }
 
+    }
+
+    //Check whether or not the user is in our list of clients.
+    public boolean authentication(String user) {
+        //If the user is not in the list, return true, otherwise false
+        for (Username username : userList) {
+            if (username.getUsername().equals(user)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
