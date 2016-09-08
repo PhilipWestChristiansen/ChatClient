@@ -58,6 +58,7 @@ public class SocketConnection extends Thread {
             if (login) {
                 prnt.println("Welcome to the chatroom");
                 showListToAll();
+
                 //Chatting phase
                 while (!msg.contains("LOGOUT")) {
                     msg = scn.nextLine();
@@ -72,21 +73,11 @@ public class SocketConnection extends Thread {
                         prnt.println("Please specify your command");
                     }
 
-                    //Message Part
+                    //Message to 1 or more
                     if (msg.contains("MSG:")) {
                         String[] parts = msg.split(":");
                         String[] users = parts[1].split(",");
-
-                        //Check if client exists in our list of clients
-                        for (int i = 0; i < users.length; i++) {
-                            String user = users[i];
-                            for (int j = 0; j < socketList.size(); j++) {
-                                //Insert method here that sends a message to that specific user
-                                //Example method: send(String client, String message);
-                                //message = parts[2];
-                                continue;
-                            }
-                        }
+                        sendMsg(users, parts[2]);
                     }
 
                     //Message ALL
@@ -105,7 +96,8 @@ public class SocketConnection extends Thread {
             //Remove from arraylist
             socketList.remove(this);
             prnt.println("Connection closed");
-
+            showListToAll();
+            
             //Close Connection
             scn.close();
             prnt.close();
@@ -142,6 +134,22 @@ public class SocketConnection extends Thread {
                 if (!socketconnection.name.equals(this.name)) {
                     PrintWriter prnt = new PrintWriter(socketconnection.s.getOutputStream(), true);
                     prnt.println("MSGRES:" + this.name + ":" + msg);
+                }
+            }
+        } catch (IOException e) {
+            //do nothing
+        }
+    }
+
+    public void sendMsg(String[] userList, String msg) {
+        try {
+            for (int i = 0; i < userList.length; i++) {
+                String user = userList[i];
+                for (SocketConnection socketconnection : socketList) {
+                    if (socketconnection.name.equals(user)) {
+                        PrintWriter prnt = new PrintWriter(socketconnection.s.getOutputStream(), true);
+                        prnt.println("MSGRES:" + this.name + ":" + msg);
+                    }
                 }
             }
         } catch (IOException e) {
