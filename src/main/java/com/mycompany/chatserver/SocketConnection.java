@@ -74,10 +74,6 @@ public class SocketConnection extends Thread {
                     }
 
                     //Message to 1 or more
-                    //MSG:modtager,modtager:besked
-                    //MSG
-                    //modtager,modtager
-                    //besked
                     if (msg.contains("MSG:")) {
                         String[] parts = msg.split(":");
                         String[] users = parts[1].split(",");
