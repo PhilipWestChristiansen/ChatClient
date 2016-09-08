@@ -34,10 +34,10 @@ public class Server {
     static int portNum = 8080;
 
     public static void main(String[] args) throws IOException {
-        if (args.length == 2) {
-            ip = args[0];
-            portNum = Integer.parseInt(args[1]);
-        }
+//        if (args.length == 2) {
+//            ip = args[0];
+//            portNum = Integer.parseInt(args[1]);
+//        }
 
         socketList = new ArrayList();
 
