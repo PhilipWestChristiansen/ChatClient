@@ -1,6 +1,7 @@
 package com.mycompany.chatserver;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -20,12 +21,12 @@ public class Server {
         }
         return instance;
     }
-    
-    //ARRAYLIST
-    private static ArrayList<Username> userList;
 
-    public ArrayList<Username> getList() {
-        return userList;
+    //ARRAYLIST
+    private static ArrayList<SocketConnection> socketList;
+
+    public ArrayList<SocketConnection> getList() {
+        return socketList;
     }
 
     //SERVER
@@ -37,8 +38,8 @@ public class Server {
             ip = args[0];
             portNum = Integer.parseInt(args[1]);
         }
-        
-        userList = new ArrayList();
+
+        socketList = new ArrayList();
 
         ServerSocket ss = new ServerSocket();
         ss.bind(new InetSocketAddress(ip, portNum));
@@ -47,7 +48,7 @@ public class Server {
 
         while (true) {
             Socket link = ss.accept();
-            new Client(link).start();
+            new SocketConnection(link).start();
         }
     }
 

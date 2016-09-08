@@ -6,22 +6,24 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Client extends Thread {
+public class SocketConnection extends Thread {
 
     Socket s;
-    Username user;
-    //Takes the arraylist created in the Server class.
-    ArrayList<Username> userList = Server.getInstance().getList();
+    String name;
+    boolean login = false;
 
-    public Client(Socket s) {
+    //Takes the arraylist created in the Server class.
+    ArrayList<SocketConnection> socketList = Server.getInstance().getList();
+
+    public SocketConnection(Socket s) {
         this.s = s;
     }
 
     //Thread starter
     public void run() {
         System.out.println("New client connection");
+        socketList.add(this);
         chatroom(s);
-        removeClient();
         System.out.println("Client disconnected");
     }
 
@@ -33,7 +35,6 @@ public class Client extends Thread {
             prnt.println("Please login first with this format: LOGIN:<name>");
 
             //Login Phase
-            boolean login = false;
             while (!login) {
                 msg = scn.nextLine();
 
@@ -45,29 +46,25 @@ public class Client extends Thread {
                 //Wether or not the user already exists
                 if (msg.contains("LOGIN:")) {
                     String[] parts = msg.split(":");
-                    //authentication() is a method in the Client class (See line 146)
-                    if (authentication(parts[1])) {
-                        userList.add(user = new Username(parts[1]));
-                        login = true;
-                        prnt.println("Login Successful");
-                    } else {
-                        prnt.println("User already exists. Please reconnect.");
-                        break;
-                    }
+                    name = parts[1];
+                    login = true;
+                } else {
+                    prnt.println("Error");
+                    break;
                 }
             }
 
             //Check if login is successful or not
             if (login) {
                 prnt.println("Welcome to the chatroom");
-                prnt.println(showClients());
+                showListToAll();
                 //Chatting phase
-                while (!msg.contains("LOGOUT:")) {
+                while (!msg.contains("LOGOUT")) {
                     msg = scn.nextLine();
 
                     //If the user tries to login again.
                     if (msg.contains("LOGIN:")) {
-                        prnt.println("You're already logged in as " + user.getUsername());
+                        prnt.println("You're already logged in as " + name);
                     }
 
                     //To ensure that msg does not only contain these keywords.
@@ -78,38 +75,35 @@ public class Client extends Thread {
                     //Message Part
                     if (msg.contains("MSG:")) {
                         String[] parts = msg.split(":");
-                        String[] clients = parts[1].split(",");
+                        String[] users = parts[1].split(",");
 
                         //Check if client exists in our list of clients
-                        for (int i = 0; i < clients.length; i++) {
-                            String client = clients[i];
-                            for (int j = 0; j < userList.size(); j++) {
-                                if (userList.get(i).getUsername().equals(client)) {
-                                    //Insert method here that sends a message to that specific user
-                                    //Example method: send(String client, String message);
-                                    //message = parts[2];
-                                    continue;
-                                }
+                        for (int i = 0; i < users.length; i++) {
+                            String user = users[i];
+                            for (int j = 0; j < socketList.size(); j++) {
+                                //Insert method here that sends a message to that specific user
+                                //Example method: send(String client, String message);
+                                //message = parts[2];
+                                continue;
                             }
                         }
-
                     }
 
                     //Message ALL
                     if (msg.contains("MSG::")) {
                         String[] parts = msg.split(":");
-                        for (Username user : userList) {
-                            //send(client.getUser, parts[2]);
-                        }
+                        sendMsgToAll(parts[2]);
                     }
 
                     //Get list of clients
                     if (msg.equals("CLIENTLIST:")) {
                         prnt.println(showClients());
                     }
-
                 }
             }
+
+            //Remove from arraylist
+            socketList.remove(this);
             prnt.println("Connection closed");
 
             //Close Connection
@@ -124,32 +118,35 @@ public class Client extends Thread {
     //Show list of clients
     public String showClients() {
         String users = "CLIENTLIST:";
-        for (Username username : userList) {
-            users += username.getUsername() + ",";
+        for (SocketConnection socket : socketList) {
+            users += socket.name + ",";
         }
         return users;
     }
 
-    //Remove client from our list
-    public void removeClient() {
-        for (Username u : userList) {
-            if (u.getUsername().equals(user.getUsername())) {
-                userList.remove(u);
-                System.out.println("Removed " + user.getUsername() + " from the list of clients");
-                break;
+    public void showListToAll() {
+        try {
+            for (SocketConnection socketconnection : socketList) {
+                PrintWriter prnt = new PrintWriter(socketconnection.s.getOutputStream(), true);
+                prnt.println(socketconnection.showClients());
             }
+        } catch (IOException e) {
+            //do nothing
         }
-
     }
 
-    //Check whether or not the user is in our list of clients.
-    public boolean authentication(String user) {
-        //If the user is not in the list, return true, otherwise false
-        for (Username username : userList) {
-            if (username.getUsername().equals(user)) {
-                return false;
+    public void sendMsgToAll(String msg) {
+        try {
+
+            for (SocketConnection socketconnection : socketList) {
+                if (!socketconnection.name.equals(this.name)) {
+                    PrintWriter prnt = new PrintWriter(socketconnection.s.getOutputStream(), true);
+                    prnt.println("MSGRES:" + this.name + ":" + msg);
+                }
             }
+        } catch (IOException e) {
+            //do nothing
         }
-        return true;
     }
+
 }
