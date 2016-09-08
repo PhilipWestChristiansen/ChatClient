@@ -13,7 +13,7 @@ public class SocketConnection extends Thread {
     boolean login = false;
 
     //Takes the arraylist created in the Server class.
-    ArrayList<SocketConnection> socketList = Server.getInstance().getList();
+    ArrayList<SocketConnection> clientList = Server.getInstance().getList();
 
     public SocketConnection(Socket s) {
         this.s = s;
@@ -22,7 +22,7 @@ public class SocketConnection extends Thread {
     //Thread start
     public void run() {
         System.out.println("New client connection");
-        socketList.add(this);
+        clientList.add(this);
         chatroom(s);
         System.out.println("Client disconnected");
     }
@@ -74,6 +74,10 @@ public class SocketConnection extends Thread {
                     }
 
                     //Message to 1 or more
+                    //MSG:modtager,modtager:besked
+                    //MSG
+                    //modtager,modtager
+                    //besked
                     if (msg.contains("MSG:")) {
                         String[] parts = msg.split(":");
                         String[] users = parts[1].split(",");
@@ -94,10 +98,10 @@ public class SocketConnection extends Thread {
             }
 
             //Remove from arraylist
-            socketList.remove(this);
+            clientList.remove(this);
             prnt.println("Connection closed");
             showListToAll();
-
+            
             //Close Connection
             scn.close();
             prnt.close();
@@ -110,7 +114,7 @@ public class SocketConnection extends Thread {
     //Show list of clients
     public String showClients() {
         String users = "CLIENTLIST:";
-        for (SocketConnection socket : socketList) {
+        for (SocketConnection socket : clientList) {
             users += socket.name + ",";
         }
         return users;
@@ -118,7 +122,7 @@ public class SocketConnection extends Thread {
 
     public void showListToAll() {
         try {
-            for (SocketConnection socketconnection : socketList) {
+            for (SocketConnection socketconnection : clientList) {
                 PrintWriter prnt = new PrintWriter(socketconnection.s.getOutputStream(), true);
                 prnt.println(socketconnection.showClients());
             }
@@ -130,7 +134,7 @@ public class SocketConnection extends Thread {
     public void sendMsgToAll(String msg) {
         try {
 
-            for (SocketConnection socketconnection : socketList) {
+            for (SocketConnection socketconnection : clientList) {
                 if (!socketconnection.name.equals(this.name)) {
                     PrintWriter prnt = new PrintWriter(socketconnection.s.getOutputStream(), true);
                     prnt.println("MSGRES:" + this.name + ":" + msg);
@@ -145,9 +149,9 @@ public class SocketConnection extends Thread {
         try {
             for (int i = 0; i < userList.length; i++) {
                 String user = userList[i];
-                for (SocketConnection socketconnection : socketList) {
-                    if (socketconnection.name.equals(user)) {
-                        PrintWriter prnt = new PrintWriter(socketconnection.s.getOutputStream(), true);
+                for (SocketConnection client : clientList) {
+                    if (client.name.equals(user)) {
+                        PrintWriter prnt = new PrintWriter(client.s.getOutputStream(), true);
                         prnt.println("MSGRES:" + this.name + ":" + msg);
                     }
                 }
@@ -156,5 +160,4 @@ public class SocketConnection extends Thread {
             //do nothing
         }
     }
-
 }
