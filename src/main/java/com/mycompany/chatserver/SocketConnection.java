@@ -19,7 +19,7 @@ public class SocketConnection extends Thread {
         this.s = s;
     }
 
-    //Thread starter
+    //Thread start
     public void run() {
         System.out.println("New client connection");
         socketList.add(this);
@@ -97,7 +97,7 @@ public class SocketConnection extends Thread {
             socketList.remove(this);
             prnt.println("Connection closed");
             showListToAll();
-            
+
             //Close Connection
             scn.close();
             prnt.close();
