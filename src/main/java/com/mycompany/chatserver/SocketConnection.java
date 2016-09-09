@@ -31,7 +31,7 @@ public class SocketConnection extends Thread {
         }
     }
 
-    public void chatroom(Socket s) throws IOException {
+    public void chatroom(Socket s) {
         try {
             Scanner scn = new Scanner(s.getInputStream());
             PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
@@ -65,34 +65,33 @@ public class SocketConnection extends Thread {
 
                 //Chatting phase
                 while (!msg.contains("LOGOUT")) {
-                    msg = scn.nextLine();
+                    try {
+                        msg = scn.nextLine();
 
-                    //If the user tries to login again.
-                    if (msg.contains("LOGIN:")) {
-                        prnt.println("You're already logged in as " + name);
-                    }
+                        //If the user tries to login again.
+                        if (msg.contains("LOGIN:")) {
+                            prnt.println("You're already logged in as " + name);
+                        }
 
-                    //To ensure that msg does not only contain these keywords.
-                    if (msg.equals("MSG:") || msg.equals("LOGIN:")) {
+                        //Message to 1 or more
+                        if (msg.contains("MSG:")) {
+                            String[] parts = msg.split(":");
+                            String[] users = parts[1].split(",");
+                            sendMsg(users, parts[2]);
+                        }
+
+                        //Message ALL
+                        if (msg.contains("MSG::")) {
+                            String[] parts = msg.split(":");
+                            sendMsgToAll(parts[2]);
+                        }
+
+                        //Get list of clients
+                        if (msg.equals("CLIENTLIST:")) {
+                            prnt.println(showClients());
+                        }
+                    } catch (Exception e) {
                         prnt.println("Please specify your command");
-                    }
-
-                    //Message to 1 or more
-                    if (msg.contains("MSG:")) {
-                        String[] parts = msg.split(":");
-                        String[] users = parts[1].split(",");
-                        sendMsg(users, parts[2]);
-                    }
-
-                    //Message ALL
-                    if (msg.contains("MSG::")) {
-                        String[] parts = msg.split(":");
-                        sendMsgToAll(parts[2]);
-                    }
-
-                    //Get list of clients
-                    if (msg.equals("CLIENTLIST:")) {
-                        prnt.println(showClients());
                     }
                 }
             }
@@ -108,8 +107,6 @@ public class SocketConnection extends Thread {
             s.close();
         } catch (Exception e) {
             clientList.remove(this);
-            PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
-            prnt.println("Error occured - Connection closed");
             System.out.println(e.getMessage());
         }
     }
@@ -124,52 +121,42 @@ public class SocketConnection extends Thread {
     }
 
     public void showListToAll() throws IOException {
-        try {
-            for (SocketConnection socketconnection : clientList) {
+        for (SocketConnection socketconnection : clientList) {
+            try {
                 PrintWriter prnt = new PrintWriter(socketconnection.s.getOutputStream(), true);
                 prnt.println(socketconnection.showClients());
+            } catch (IOException e) {
+                //Do nothing
             }
-        } catch (IOException e) {
-            clientList.remove(this);
-            PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
-            prnt.println("Error occured - Connection closed");
-            s.close();
         }
     }
 
-    public void sendMsgToAll(String msg) throws IOException {
-        try {
-
-            for (SocketConnection socketconnection : clientList) {
-                if (!socketconnection.name.equals(this.name)) {
-                    PrintWriter prnt = new PrintWriter(socketconnection.s.getOutputStream(), true);
+    public void sendMsgToAll(String msg) {
+        for (SocketConnection client : clientList) {
+            try {
+                if (!client.name.equals(this.name)) {
+                    PrintWriter prnt = new PrintWriter(client.s.getOutputStream(), true);
                     prnt.println("MSGRES:" + this.name + ":" + msg);
                 }
+            } catch (IOException e) {
+                //Do nothing
             }
-        } catch (IOException e) {
-            clientList.remove(this);
-            PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
-            prnt.println("Error occured - Connection closed");
-            s.close();
         }
     }
 
-    public void sendMsg(String[] userList, String msg) throws IOException {
-        try {
-            for (int i = 0; i < userList.length; i++) {
-                String user = userList[i];
-                for (SocketConnection client : clientList) {
+    public void sendMsg(String[] userList, String msg) {
+        for (int i = 0; i < userList.length; i++) {
+            String user = userList[i];
+            for (SocketConnection client : clientList) {
+                try {
                     if (client.name.equals(user)) {
                         PrintWriter prnt = new PrintWriter(client.s.getOutputStream(), true);
                         prnt.println("MSGRES:" + this.name + ":" + msg);
                     }
+                } catch (IOException e) {
+                    //Do nothing
                 }
             }
-        } catch (IOException e) {
-            clientList.remove(this);
-            PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
-            prnt.println("Error occured - Connection closed");
-            s.close();
         }
     }
 }
