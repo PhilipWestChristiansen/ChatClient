@@ -61,7 +61,6 @@ public class SocketConnection extends Thread {
 
             //Check if login is successful or not
             if (login) {
-                prnt.println("Welcome to the chatroom");
                 showListToAll();
 
                 //Chatting phase
