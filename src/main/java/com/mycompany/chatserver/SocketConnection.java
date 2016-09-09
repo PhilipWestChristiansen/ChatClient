@@ -38,7 +38,6 @@ public class SocketConnection extends Thread {
             Scanner scn = new Scanner(s.getInputStream());
             PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
             String msg = "";
-            prnt.println("Please login first with this format: LOGIN:<name>");
 
             //Login Phase
             while (!login) {
