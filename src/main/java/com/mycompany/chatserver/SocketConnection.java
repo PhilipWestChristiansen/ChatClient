@@ -64,7 +64,7 @@ public class SocketConnection extends Thread {
                 showListToAll();
 
                 //Chatting phase
-                while (!msg.contains("LOGOUT")) {
+                while (!msg.contains("LOGOUT:")) {
                     try {
                         msg = scn.nextLine();
 
@@ -132,6 +132,7 @@ public class SocketConnection extends Thread {
         }
     }
 
+    
     public void sendMsgToAll(String msg) {
         for (SocketConnection client : clientList) {
             try {
