@@ -21,13 +21,17 @@ public class SocketConnection extends Thread {
 
     //Thread start
     public void run() {
-        System.out.println("New client connection");
-        clientList.add(this);
-        chatroom(s);
-        System.out.println("Client disconnected");
+        try {
+            System.out.println("New client connection");
+            clientList.add(this);
+            chatroom(s);
+            System.out.println("Client disconnected");
+        } catch (Exception e) {
+            //Do nothing    
+        }
     }
 
-    public void chatroom(Socket s) {
+    public void chatroom(Socket s) throws IOException {
         try {
             Scanner scn = new Scanner(s.getInputStream());
             PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
@@ -97,12 +101,15 @@ public class SocketConnection extends Thread {
             clientList.remove(this);
             prnt.println("Connection closed");
             showListToAll();
-            
+
             //Close Connection
             scn.close();
             prnt.close();
             s.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
+            clientList.remove(this);
+            PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
+            prnt.println("Error occured - Connection closed");
             System.out.println(e.getMessage());
         }
     }
@@ -116,18 +123,21 @@ public class SocketConnection extends Thread {
         return users;
     }
 
-    public void showListToAll() {
+    public void showListToAll() throws IOException {
         try {
             for (SocketConnection socketconnection : clientList) {
                 PrintWriter prnt = new PrintWriter(socketconnection.s.getOutputStream(), true);
                 prnt.println(socketconnection.showClients());
             }
         } catch (IOException e) {
-            //do nothing
+            clientList.remove(this);
+            PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
+            prnt.println("Error occured - Connection closed");
+            s.close();
         }
     }
 
-    public void sendMsgToAll(String msg) {
+    public void sendMsgToAll(String msg) throws IOException {
         try {
 
             for (SocketConnection socketconnection : clientList) {
@@ -137,11 +147,14 @@ public class SocketConnection extends Thread {
                 }
             }
         } catch (IOException e) {
-            //do nothing
+            clientList.remove(this);
+            PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
+            prnt.println("Error occured - Connection closed");
+            s.close();
         }
     }
 
-    public void sendMsg(String[] userList, String msg) {
+    public void sendMsg(String[] userList, String msg) throws IOException {
         try {
             for (int i = 0; i < userList.length; i++) {
                 String user = userList[i];
@@ -153,7 +166,10 @@ public class SocketConnection extends Thread {
                 }
             }
         } catch (IOException e) {
-            //do nothing
+            clientList.remove(this);
+            PrintWriter prnt = new PrintWriter(s.getOutputStream(), true);
+            prnt.println("Error occured - Connection closed");
+            s.close();
         }
     }
 }
