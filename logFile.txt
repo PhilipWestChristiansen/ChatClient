@@ -1,0 +1,2 @@
+Sep 09, 2016 10:25:55 AM com.mycompany.chatserver.Server main
+INFO: Starting the Server

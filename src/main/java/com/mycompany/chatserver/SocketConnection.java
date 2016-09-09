@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SocketConnection extends Thread {
 
@@ -22,12 +24,12 @@ public class SocketConnection extends Thread {
     //Thread start
     public void run() {
         try {
-            System.out.println("New client connection");
+            Logger.getLogger(Log.LOG_NAME).log(Level.INFO, "New client connection");
             clientList.add(this);
             chatroom(s);
-            System.out.println("Client disconnected");
+            Logger.getLogger(Log.LOG_NAME).log(Level.INFO, "Client disconnected");
         } catch (Exception e) {
-            //Do nothing    
+            Logger.getLogger(Log.LOG_NAME).log(Level.SEVERE, null, e);
         }
     }
 
@@ -91,7 +93,7 @@ public class SocketConnection extends Thread {
                             prnt.println(showClients());
                         }
                     } catch (Exception e) {
-                        prnt.println("Please specify your command");
+                        Logger.getLogger(Log.LOG_NAME).log(Level.INFO, "Error occured - Please specify your command");
                     }
                 }
             }
@@ -107,6 +109,7 @@ public class SocketConnection extends Thread {
             s.close();
         } catch (Exception e) {
             clientList.remove(this);
+            Logger.getLogger(Log.LOG_NAME).log(Level.SEVERE, null, e);
             System.out.println(e.getMessage());
         }
     }
@@ -126,7 +129,7 @@ public class SocketConnection extends Thread {
                 PrintWriter prnt = new PrintWriter(socketconnection.s.getOutputStream(), true);
                 prnt.println(socketconnection.showClients());
             } catch (IOException e) {
-                //Do nothing
+                Logger.getLogger(Log.LOG_NAME).log(Level.SEVERE, null, e);
             }
         }
     }
@@ -134,12 +137,10 @@ public class SocketConnection extends Thread {
     public void sendMsgToAll(String msg) {
         for (SocketConnection client : clientList) {
             try {
-                if (!client.name.equals(this.name)) {
-                    PrintWriter prnt = new PrintWriter(client.s.getOutputStream(), true);
-                    prnt.println("MSGRES:" + this.name + ":" + msg);
-                }
+                PrintWriter prnt = new PrintWriter(client.s.getOutputStream(), true);
+                prnt.println("MSGRES:" + this.name + ":" + msg);
             } catch (IOException e) {
-                //Do nothing
+                Logger.getLogger(Log.LOG_NAME).log(Level.SEVERE, null, e);
             }
         }
     }
@@ -154,7 +155,7 @@ public class SocketConnection extends Thread {
                         prnt.println("MSGRES:" + this.name + ":" + msg);
                     }
                 } catch (IOException e) {
-                    //Do nothing
+                    Logger.getLogger(Log.LOG_NAME).log(Level.SEVERE, null, e);
                 }
             }
         }
