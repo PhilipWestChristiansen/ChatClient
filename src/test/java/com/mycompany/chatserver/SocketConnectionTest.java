@@ -48,7 +48,6 @@ public class SocketConnectionTest {
 
     @AfterClass
     public static void tearDownClass() {
-        Server.stopServer();
     }
 
     @Before

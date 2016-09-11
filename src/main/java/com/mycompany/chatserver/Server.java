@@ -34,7 +34,6 @@ public class Server {
 //    static String ip = "localhost";
 //    static int portNum = 8080;
     //SERVER start
-    static boolean running;
 
     public static void main(String[] args) throws IOException {
         try {
@@ -47,10 +46,9 @@ public class Server {
 
                 ServerSocket ss = new ServerSocket();
                 ss.bind(new InetSocketAddress(ip, portNum));
-                running = true;
                 Logger.getLogger(Log.LOG_NAME).log(Level.INFO, "Starting the Server: IP: " + ip + " - PORT: " + portNum);
 
-                while (running) {
+                while (true) {
                     Socket link = ss.accept();
                     new SocketConnection(link).start();
                 }
@@ -59,9 +57,4 @@ public class Server {
             Log.closeLogger();
         }
     }
-
-    public static void stopServer() {
-        running = false;
-    }
-
 }
