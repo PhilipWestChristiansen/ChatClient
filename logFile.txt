@@ -1,2 +1,10 @@
-Sep 09, 2016 10:25:55 AM com.mycompany.chatserver.Server main
-INFO: Starting the Server
+Sep 10, 2016 7:10:22 PM com.mycompany.chatserver.Server main
+INFO: Starting the Server: IP: localhost - PORT: 8080
+Sep 10, 2016 7:10:23 PM com.mycompany.chatserver.SocketConnection run
+INFO: New client connection
+Sep 10, 2016 7:10:23 PM com.mycompany.chatserver.SocketConnection run
+INFO: New client connection
+Sep 10, 2016 7:10:23 PM com.mycompany.chatserver.SocketConnection run
+INFO: Client disconnected
+Sep 10, 2016 7:10:23 PM com.mycompany.chatserver.SocketConnection run
+INFO: Client disconnected

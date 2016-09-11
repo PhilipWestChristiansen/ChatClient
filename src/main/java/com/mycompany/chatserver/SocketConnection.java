@@ -132,7 +132,6 @@ public class SocketConnection extends Thread {
         }
     }
 
-    
     public void sendMsgToAll(String msg) {
         for (SocketConnection client : clientList) {
             try {

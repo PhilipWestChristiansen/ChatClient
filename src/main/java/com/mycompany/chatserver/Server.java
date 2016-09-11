@@ -31,9 +31,11 @@ public class Server {
         return socketList;
     }
 
-    //SERVER
 //    static String ip = "localhost";
 //    static int portNum = 8080;
+    //SERVER start
+    static boolean running;
+
     public static void main(String[] args) throws IOException {
         try {
             if (args.length == 2) {
@@ -45,10 +47,10 @@ public class Server {
 
                 ServerSocket ss = new ServerSocket();
                 ss.bind(new InetSocketAddress(ip, portNum));
-
+                running = true;
                 Logger.getLogger(Log.LOG_NAME).log(Level.INFO, "Starting the Server: IP: " + ip + " - PORT: " + portNum);
 
-                while (true) {
+                while (running) {
                     Socket link = ss.accept();
                     new SocketConnection(link).start();
                 }
@@ -56,6 +58,10 @@ public class Server {
         } finally {
             Log.closeLogger();
         }
+    }
+
+    public static void stopServer() {
+        running = false;
     }
 
 }
